@@ -2,7 +2,6 @@ package com.rique.calculator;
 
 import com.rique.calculator.controller.CalculatorController;
 import com.rique.calculator.model.EquationRequest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -73,25 +72,34 @@ public class CalculatorControllerTest {
     }
 
     @Test
-    public void testGetHistoryWithEntries() throws Exception {
+    public void testGetHistoryWithEntriesAndDeleteThem() throws Exception {
         List<String> equationHistory = new ArrayList<>(List.of("5+3*2", "10/2"));
 
         ReflectionTestUtils.setField(calculatorController, "equationHistory", equationHistory);
 
         mockMvc.perform(MockMvcRequestBuilders
-                .get("/api/calculator/history")
-                .contentType(MediaType.APPLICATION_JSON)
-        )
+                        .get("/api/calculator/history")
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().json("[\"5+3*2\",\"10/2\"]"));
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .delete("/api/calculator/history")
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
+
+        equationHistory = (List<String>) ReflectionTestUtils.getField(calculatorController, "equationHistory");
+        assert equationHistory.isEmpty();
     }
 
     @Test
     public void testGetHistoryEmpty() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders
-                .get("/api/calculator/history")
-                .contentType(MediaType.APPLICATION_JSON)
-        )
+                        .get("/api/calculator/history")
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().json("[]"));
     }
